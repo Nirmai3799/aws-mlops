@@ -14,5 +14,12 @@ def home():
 @app.post("/predict")
 def predict(data: dict):
     df = pd.DataFrame([data])
-    prediction = model.predict(df)[0]
-    return {"predicted_delivery_time": prediction}
+    try:
+        prediction = model.predict(df)[0]
+        return {"prediction": float(prediction)}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
