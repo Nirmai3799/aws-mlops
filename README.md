@@ -1,187 +1,114 @@
-# 🚀 Delivery Time Prediction – End-to-End MLOps Project (AWS Ready)
+# 🚀 AWS MLOps End-to-End Project
 
-## 📌 Project Overview
-
-This project focuses on building an **end-to-end Machine Learning system** to predict delivery time based on various real-world factors such as distance, traffic conditions, weather, and courier experience.
-
-The goal is to simulate a **production-grade MLOps pipeline** using modern tools and AWS services.
+This project demonstrates a complete **MLOps pipeline on AWS**, covering infrastructure setup, containerization, deployment, and CI/CD automation.
 
 ---
 
-## 🎯 Problem Statement
+## 📌 What We Built
 
-Accurately predicting delivery time is critical for logistics and food delivery platforms. This project aims to:
+An end-to-end workflow:
 
-* Improve delivery time estimation
-* Enhance customer experience
-* Optimize operational efficiency
+Local Development → Docker → AWS ECR → EC2 Deployment → CI/CD (GitHub Actions)
 
 ---
 
-## 🧠 Features Used
+## 🏗️ Architecture
 
-* Distance (km)
-* Preparation Time (minutes)
-* Courier Experience (years)
-* Weather Conditions
-* Traffic Level
-* Time of Day
-* Vehicle Type
+* **EC2 (ARM64 - Graviton)** for hosting application
+* **Docker** for containerization
+* **Amazon ECR** for container registry
+* **GitHub Actions** for CI/CD pipeline
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙️ Setup Steps
 
-### 🔹 Machine Learning
+### 1. AWS Account Setup
 
-* Python
-* Pandas
-* Scikit-learn
-* NumPy
+* IAM user with programmatic access
+* MFA enabled
+* Budget alerts configured
 
-### 🔹 Backend
+---
 
-* FastAPI
+### 2. EC2 Setup
 
-### 🔹 MLOps & Deployment (Planned / In Progress)
+* Ubuntu ARM64 instance (Graviton)
+* Security Group: Port 80 open
+* Docker installed and configured
 
+---
+
+### 3. Dockerization
+
+* Created Dockerfile for application
+* Built multi-architecture image (amd64 + arm64)
+
+---
+
+### 4. ECR (Elastic Container Registry)
+
+* Created private repository
+* Pushed Docker image to ECR
+
+---
+
+### 5. Deployment
+
+* Pulled image from ECR on EC2
+
+* Ran container:
+
+  ```bash
+  docker run -d -p 80:80 <ECR_IMAGE_URI>
+  ```
+
+* Accessed application via:
+
+  ```
+  http://<EC2-PUBLIC-IP>
+  ```
+
+---
+
+### 6. CI/CD with GitHub Actions
+
+* Automatically:
+
+  * Builds Docker image
+  * Supports multi-architecture
+  * Pushes to ECR on every commit
+
+---
+
+## 🧠 Key Learnings
+
+* Handling ARM64 vs AMD64 architecture issues
+* Secure authentication with AWS ECR
+* Docker multi-platform builds using Buildx
+* Real-world deployment flow on AWS
+* CI/CD automation for containerized apps
+
+---
+
+## 🚀 Next Steps
+
+* Add AWS CodePipeline for deployment automation
+* Integrate SageMaker for ML training pipelines
+* Add Feature Store & Model Registry
+* Monitoring & logging
+
+---
+
+## 🛠️ Tech Stack
+
+* AWS (EC2, ECR, IAM)
 * Docker
-* AWS S3
-* AWS ECR
-* AWS ECS / EC2
-* AWS SageMaker (optional)
-* AWS CloudWatch
-
----
-
-## 🔄 ML Pipeline
-
-The project uses a **scikit-learn Pipeline** for:
-
-* Data preprocessing
-* Handling categorical variables (One-Hot Encoding)
-* Model training
-
-This ensures:
-
-* Clean workflow
-* Reproducibility
-* Easy deployment
-
----
-
-## 📊 Model Performance
-
-* MAE: ~6.87
-* RMSE: (calculated)
-* R² Score: (calculated)
-
----
-
-## 💾 Model Saving
-
-The trained pipeline is saved using:
-
-```bash
-joblib.dump(pipeline, "model.pkl")
-```
-
----
-
-## 🚀 API Development
-
-A FastAPI application is created to serve predictions.
-
-### 🔹 Run the API
-
-```bash
-uvicorn app:app --reload
-```
-
-### 🔹 API Endpoint
-
-**POST /predict**
-
-#### Sample Input:
-
-```json
-{
-  "Distance_km": 5,
-  "Preparation_Time_min": 20,
-  "Courier_Experience_yrs": 2,
-  "Weather": "Rainy",
-  "Traffic_Level": "High",
-  "Time_of_Day": "Evening",
-  "Vehicle_Type": "Scooter"
-}
-```
-
-#### Sample Output:
-
-```json
-{
-  "predicted_delivery_time": 50.86
-}
-```
-
----
-
-## 📁 Project Structure
-
-```
-delivery-mlops/
-│
-├── app.py
-├── model.pkl
-├── requirements.txt
-├── notebook/
-│   └── training.ipynb
-└── README.md
-```
-
----
-
-## 🐳 Containerization (Upcoming)
-
-* Dockerfile will be created
-* Application will be containerized
-* Ensures portability and consistency
-
----
-
-## ☁️ AWS Deployment Plan
-
-This project will be deployed using AWS services:
-
-* **S3** → Store model and data
-* **ECR** → Store Docker image
-* **ECS (Fargate)** → Deploy API
-* **CloudWatch** → Logging and monitoring
-* **SageMaker** → Optional model training & hosting
-
----
-
-## 🔥 Key Highlights
-
-* End-to-end ML pipeline
-* Real-world dataset simulation
-* FastAPI deployment
-* AWS-ready architecture
-* Scalable and production-oriented design
-
----
-
-## 📈 Future Improvements
-
-* Hyperparameter tuning
-* CI/CD pipeline (AWS CodePipeline)
-* Model monitoring and drift detection
-* Frontend UI integration
+* GitHub Actions
+* Python (App Layer)
 
 ---
 
 ## 👨‍💻 Author
 
-Built as part of an **MLOps + AWS hands-on project** to gain practical, industry-level experience.
-
----
+Built as part of hands-on MLOps learning journey.

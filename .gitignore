@@ -3,3 +3,6 @@ __pycache__/
 .env
 .aws-venv/
 .ipynb_checkpoints/
+admin-user_credentials.csv
+mlops-key.pem
+.DS_Store
