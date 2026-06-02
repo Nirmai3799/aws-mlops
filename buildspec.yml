@@ -29,16 +29,18 @@ phases:
 
       - echo "Deploying to EC2..."
       - |
-        ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@18.61.161.25 "
-          aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 928747699677.dkr.ecr.ap-south-2.amazonaws.com &&
+        ssh -i key.pem ec2-user@18.61.161.25 << 'EOF'
 
-          docker pull 928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest &&
+        set -e
 
-          docker stop mlops-container || true &&
-          docker rm mlops-container || true &&
+        aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 928747699677.dkr.ecr.ap-south-2.amazonaws.com
 
-          docker run -d -p 80:8000 --restart always --name mlops-container \
-          928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest &&
+        docker pull 928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest
 
-          docker image prune -af
-        "
+        docker stop mlops-container || true
+        docker rm mlops-container || true
+
+        docker run -d -p 80:8000 --restart always --name mlops-container \
+        928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest
+
+        EOF
