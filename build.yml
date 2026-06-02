@@ -1,0 +1,44 @@
+version: 0.2
+
+phases:
+
+  pre_build:
+    commands:
+      - echo "Checking AWS identity..."
+      - aws sts get-caller-identity
+
+      - echo "Logging into Amazon ECR..."
+      - aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 928747699677.dkr.ecr.ap-south-2.amazonaws.com
+
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t mlops-app:latest .
+
+      - echo "Tagging image for ECR..."
+      - docker tag mlops-app:latest 928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest
+
+      - echo "Pushing image to ECR..."
+      - docker push 928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest
+
+  post_build:
+    commands:
+      - echo "Setting up SSH key..."
+      - echo "$SSH_KEY" | base64 -d > key.pem
+      - chmod 400 key.pem
+
+      - echo "Deploying to EC2..."
+      - |
+        ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@18.61.161.25 "
+          aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 928747699677.dkr.ecr.ap-south-2.amazonaws.com &&
+
+          docker pull 928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest &&
+
+          docker stop mlops-container || true &&
+          docker rm mlops-container || true &&
+
+          docker run -d -p 80:8000 --restart always --name mlops-container \
+          928747699677.dkr.ecr.ap-south-2.amazonaws.com/mlops-app:latest &&
+
+          docker image prune -af
+        "
