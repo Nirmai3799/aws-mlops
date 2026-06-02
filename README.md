@@ -1,114 +1,109 @@
-# 🚀 AWS MLOps End-to-End Project
+# 🚀 MLOps Deployment Pipeline (FastAPI + Docker + AWS)
 
-This project demonstrates a complete **MLOps pipeline on AWS**, covering infrastructure setup, containerization, deployment, and CI/CD automation.
+## 📌 Project Overview
+This project demonstrates a complete **end-to-end MLOps deployment pipeline** using:
 
----
-
-## 📌 What We Built
-
-An end-to-end workflow:
-
-Local Development → Docker → AWS ECR → EC2 Deployment → CI/CD (GitHub Actions)
+- FastAPI (ML app/API)
+- Docker (containerization)
+- AWS ECR (image registry)
+- AWS EC2 (deployment server)
+- AWS CodeBuild (build + deploy via SSH)
+- AWS CodePipeline (CI/CD automation)
 
 ---
 
 ## 🏗️ Architecture
 
-* **EC2 (ARM64 - Graviton)** for hosting application
-* **Docker** for containerization
-* **Amazon ECR** for container registry
-* **GitHub Actions** for CI/CD pipeline
+GitHub → CodePipeline → CodeBuild → EC2 (Docker Container)
 
 ---
 
-## ⚙️ Setup Steps
+## ⚙️ Tech Stack
 
-### 1. AWS Account Setup
-
-* IAM user with programmatic access
-* MFA enabled
-* Budget alerts configured
-
----
-
-### 2. EC2 Setup
-
-* Ubuntu ARM64 instance (Graviton)
-* Security Group: Port 80 open
-* Docker installed and configured
+- Python 3.10
+- FastAPI
+- Docker
+- AWS EC2
+- AWS ECR
+- AWS CodeBuild
+- AWS CodePipeline
 
 ---
 
-### 3. Dockerization
+## 📂 Project Structure
 
-* Created Dockerfile for application
-* Built multi-architecture image (amd64 + arm64)
 
----
+.
+├── app.py
+├── requirements.txt
+├── Dockerfile
+└── buildspec.yml
 
-### 4. ECR (Elastic Container Registry)
-
-* Created private repository
-* Pushed Docker image to ECR
 
 ---
 
-### 5. Deployment
+## 🐳 Docker Setup
 
-* Pulled image from ECR on EC2
+### Dockerfile
 
-* Ran container:
+```dockerfile
+FROM python:3.10-slim
 
-  ```bash
-  docker run -d -p 80:80 <ECR_IMAGE_URI>
-  ```
+WORKDIR /app
 
-* Accessed application via:
+COPY . /app
 
-  ```
-  http://<EC2-PUBLIC-IP>
-  ```
+RUN pip install --no-cache-dir -r requirements.txt
 
----
+EXPOSE 8000
 
-### 6. CI/CD with GitHub Actions
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+☁️ AWS Setup
+1. EC2 Instance
+Launched Ubuntu/Amazon Linux EC2
+Installed Docker
+Opened ports:
+22 (SSH)
+8000 (App access)
+2. ECR Repository
+Created repository: mlops-app
+Pushed Docker image
+3. CodeBuild Setup
 
-* Automatically:
+Used NO_SOURCE and inline buildspec.
 
-  * Builds Docker image
-  * Supports multi-architecture
-  * Pushes to ECR on every commit
+buildspec.yml
+version: 0.2
 
----
-
-## 🧠 Key Learnings
-
-* Handling ARM64 vs AMD64 architecture issues
-* Secure authentication with AWS ECR
-* Docker multi-platform builds using Buildx
-* Real-world deployment flow on AWS
-* CI/CD automation for containerized apps
-
----
-
-## 🚀 Next Steps
-
-* Add AWS CodePipeline for deployment automation
-* Integrate SageMaker for ML training pipelines
-* Add Feature Store & Model Registry
-* Monitoring & logging
-
----
-
-## 🛠️ Tech Stack
-
-* AWS (EC2, ECR, IAM)
-* Docker
-* GitHub Actions
-* Python (App Layer)
-
----
-
-## 👨‍💻 Author
-
-Built as part of hands-on MLOps learning journey.
+phases:
+  build:
+    commands:
+      - echo "Starting deployment"
+      - echo "$EC2_KEY" | base64 -d > key.pem
+      - chmod 400 key.pem
+      - |
+        ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@<EC2_PUBLIC_IP> "
+          docker pull <ECR_IMAGE_URI>:latest &&
+          docker stop mlops-app || true &&
+          docker rm mlops-app || true &&
+          docker run -d -p 8000:8000 --name mlops-app <ECR_IMAGE_URI>:latest
+        "
+🔐 Key Handling (Important)
+Private key converted to base64
+Stored in CodeBuild environment variable: EC2_KEY
+base64 -i mlops-key.pem > key.txt
+🔄 CodePipeline Flow
+Source: GitHub
+Build: CodeBuild
+Deploy: SSH to EC2 (via CodeBuild)
+🚀 Deployment Flow
+Push code to GitHub
+CodePipeline triggers automatically
+CodeBuild runs:
+Connects to EC2 via SSH
+Pulls latest Docker image
+Stops old container
+Runs new container
+App becomes live
+🌐 Access Application
+http://<EC2_PUBLIC_IP>:8000
